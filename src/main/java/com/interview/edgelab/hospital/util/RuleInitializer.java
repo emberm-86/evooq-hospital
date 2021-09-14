@@ -53,6 +53,7 @@ public class RuleInitializer {
             .to(Status.DEAD)
             .drugs(Drug.PARACETAMOL, Drug.ASPIRIN)
             .build()));
+    
     return rules;
   }
 }

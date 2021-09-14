@@ -17,7 +17,6 @@ import java.util.List;
 public class ApplicationTest {
 
   private static List<Rule> rules;
-
   private static StateMachineService stateMachineService;
 
   @BeforeAll
@@ -127,14 +126,14 @@ public class ApplicationTest {
     Assertions.assertEquals(stateMachineService.evaluate(stateMachine), "F:2,H:0,D:1,T:0,X:0");
   }
 
-  // First state change Tuberculosis to Healthy, second is Healthy to Fever
+  // First state change Tuberculosis to Healthy, second is Healthy to Fever.
   @Test
   public void testTuberculosisAndDiabetesWithInsulinAndAntibiotic() {
     StateMachine stateMachine = new StateMachine("D,D,T,T", "An,I", rules);
     Assertions.assertEquals(stateMachineService.evaluate(stateMachine), "F:2,H:0,D:2,T:0,X:0");
   }
 
-  // All medicines served total death.
+  // All medicines served, it means total death.
   @Test
   public void testWithAllMedicines() {
     StateMachine stateMachine = new StateMachine("D,D,T,T", "P,An,I,As", rules);
@@ -142,7 +141,7 @@ public class ApplicationTest {
   }
 
   @Test
-  public void testExtra() {
+  public void testCustomCase() {
     StateMachine stateMachine = new StateMachine("D,D,T,T", "P,An,I", rules);
     Assertions.assertEquals(stateMachineService.evaluate(stateMachine), "F:0,H:2,D:2,T:0,X:0");
   }

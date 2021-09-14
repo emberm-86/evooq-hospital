@@ -13,8 +13,6 @@ public class Application {
 
     StateMachine stateMachine = new StateMachine(args[0], args[1], RuleInitializer.initRules());
     StateMachineService stateMachineService = new StateMachineService();
-
-    String evaluate = stateMachineService.evaluate(stateMachine);
-    System.out.println(evaluate);
+    System.out.println(stateMachineService.evaluate(stateMachine));
   }
 }

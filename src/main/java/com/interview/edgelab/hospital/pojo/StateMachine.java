@@ -10,16 +10,16 @@ public class StateMachine {
   private final String patients;
   private final String medicines;
   private final List<Rule> rules;
-  private final int spaghettiPowerShowChance;
+  private final int spaghettiProbability;
 
   private static final int FLYING_SPAGHETTI_MONSTER_SHOWS_POWER = 1000000;
 
   public StateMachine(String patients, String medicines, List<Rule> rules,
-      int spaghettiPowerShowChance) {
+      int spaghettiProbability) {
     this.patients = patients;
     this.medicines = medicines;
     this.rules = rules;
-    this.spaghettiPowerShowChance = spaghettiPowerShowChance;
+    this.spaghettiProbability = spaghettiProbability;
   }
 
   public StateMachine(String patients, String medicines, List<Rule> rules) {
@@ -38,7 +38,7 @@ public class StateMachine {
     return rules;
   }
 
-  public int getSpaghettiPowerShowChance() {
-    return spaghettiPowerShowChance;
+  public int getSpaghettiProbability() {
+    return spaghettiProbability;
   }
 }

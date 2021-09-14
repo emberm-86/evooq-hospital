@@ -1,7 +1,6 @@
 package com.interview.edgelab.hospital.service;
 
 import com.interview.edgelab.hospital.pojo.Drug;
-import com.interview.edgelab.hospital.pojo.Rule;
 import com.interview.edgelab.hospital.pojo.StateMachine;
 import com.interview.edgelab.hospital.pojo.Status;
 import com.interview.edgelab.hospital.util.CollectionUtil;
@@ -26,50 +25,35 @@ public class StateMachineService {
    * Method for evaluating the input from the command line.
    */
   public String evaluate(StateMachine stateMachine) {
+    Map<Status, Long> patients = getPatientsByStatus(stateMachine.getPatients());
+    Set<Set<Drug>> medicinesPowerSet = getMedicines(stateMachine.getMedicines());
 
-    // Input parsing.
-    String patientsInp = stateMachine.getPatients();
-    String medicinesInp = stateMachine.getMedicines();
-
-    List<Rule> rules = stateMachine.getRules();
-
-    int spaghettiPowerShowChance =
-        stateMachine.getSpaghettiPowerShowChance();
-
-    Map<Status, Long> patients = getPatientsByStatus(patientsInp);
-    Set<Set<Drug>> medicinesPowerSet = getMedicines(medicinesInp);
-
-    // Processing of the rules.
-    rules.forEach(rule -> {
+    // Processing by the rules.
+    stateMachine.getRules().forEach(rule -> {
       Long fromValue = patients.get(rule.getFrom());
 
       if (fromValue == null || !patients.containsKey(rule.getTo())) {
-        // This can happen if someone add a rule with invalid status.
-        throw new RuntimeException("Rule is not consistent with " +
-            "Status value set!");
+        // This can happen if someone adds a rule with invalid status.
+        throw new RuntimeException("Rule is not consistent with Status value set!");
       }
 
       // Evaluation of the actual rule.
-      Set<Drug> medicineRuleSet =
-          Arrays.stream(rule.getDrugs()).collect(Collectors.toSet());
+      Set<Drug> medicineRuleSet = Arrays.stream(rule.getDrugs()).collect(Collectors.toSet());
 
-      Status toStatus =
-          medicinesPowerSet.stream()
-              .anyMatch(x -> x.containsAll(medicineRuleSet))
-              ? rule.getTo() : (rule.isStrict() ? Status.DEAD : null);
+      Status toStatus = medicinesPowerSet.stream().anyMatch(x -> x.containsAll(medicineRuleSet))
+          ? rule.getTo() : (rule.isStrict() ? Status.DEAD : null);
 
       if (toStatus == null || toStatus.equals(rule.getFrom())) {
         return; // Rule is skipped.
       }
 
-      // Every patient will get medicine and moved to the status
-      // evaluated by the rule.
+      /* Every patient will get medicine and moved to the status which is the result of
+         the evaluation of the rule. */
       patients.computeIfPresent(toStatus, (k, v) -> v + fromValue);
       patients.put(rule.getFrom(), 0L);
     });
 
-    checkIfSpaghettiMonsterComes(patients, spaghettiPowerShowChance);
-
+    checkIfSpaghettiMonsterComes(patients, stateMachine.getSpaghettiProbability());
     return formattedOutput(patients);
   }
 
@@ -77,13 +61,10 @@ public class StateMachineService {
    * Deserializing the medicine arg of the input.
    */
   private Set<Set<Drug>> getMedicines(String medicinesInp) {
-    String[] medicinesArr = medicinesInp != null ?
-        medicinesInp.split(SPLITTER) : new String[]{};
+    String[] medicinesArr = medicinesInp != null ? medicinesInp.split(SPLITTER) : new String[]{};
 
-    List<Drug> medicines =
-        Arrays.stream(medicinesArr).map(Drug::fromId)
-            .filter(Objects::nonNull)
-            .distinct().collect(Collectors.toList());
+    List<Drug> medicines = Arrays.stream(medicinesArr).map(Drug::fromId)
+        .filter(Objects::nonNull).distinct().collect(Collectors.toList());
 
     return CollectionUtil.powerSet(medicines);
   }
@@ -96,28 +77,19 @@ public class StateMachineService {
       throw new RuntimeException("Patients cannot be null!");
     }
 
-    String[] patientsArr = patientsInp.split(SPLITTER);
+    Map<Status, Long> patients = Arrays.stream(patientsInp.split(SPLITTER)).map(Status::fromId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-    Map<Status, Long> patients =
-        Arrays.stream(patientsArr).map(Status::fromId)
-            .filter(Objects::nonNull)
-            .collect(Collectors.groupingBy(Function.identity(),
-                Collectors.counting()));
-
-    Arrays.stream(Status.values())
-        .forEach(k -> patients.putIfAbsent(k, 0L));
-
+    Arrays.stream(Status.values()).forEach(k -> patients.putIfAbsent(k, 0L));
     return patients;
   }
 
   /**
    * Updating patient states if Spaghetti monster comes.
    */
-  private void checkIfSpaghettiMonsterComes(Map<Status, Long> patients,
-      int spaghettiPowerShowChance) {
-
-    if (!flyingSpaghettiMonsterShowsPower(spaghettiPowerShowChance)
-        || patients.get(Status.DEAD) <= 0) {
+  private void checkIfSpaghettiMonsterComes(Map<Status, Long> patients, int spaghettiProbability) {
+    if (!flyingSpaghettiMonsterShowsPower(spaghettiProbability) || patients.get(Status.DEAD) <= 0) {
       return;
     }
 
@@ -137,8 +109,7 @@ public class StateMachineService {
   /**
    * Spaghetti monster possibility calculation.
    */
-  private boolean flyingSpaghettiMonsterShowsPower(
-      int spaghettiPowerShowChance) {
-    return 0 == new Random().nextInt(spaghettiPowerShowChance);
+  private boolean flyingSpaghettiMonsterShowsPower(int spaghettiProbability) {
+    return 0 == new Random().nextInt(spaghettiProbability);
   }
 }

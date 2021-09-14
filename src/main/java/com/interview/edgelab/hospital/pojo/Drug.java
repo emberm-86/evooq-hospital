@@ -30,6 +30,6 @@ public enum Drug {
   }
 
   private static final Map<String, Drug>
-      STATUS_LOOKUP_MAP = Arrays.stream(values()).collect(
-      Collectors.toMap(Drug::getId, Function.identity()));
+      STATUS_LOOKUP_MAP = Arrays.stream(values())
+      .collect(Collectors.toMap(Drug::getId, Function.identity()));
 }
